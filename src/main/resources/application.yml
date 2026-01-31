@@ -1,0 +1,39 @@
+application:
+  name : "chat application"
+
+app:
+  jwt_secret: ${TOKEN_SECRET}
+  jwt_exp: ${TOKEN_EXP}
+  url_redirect: ${BASE_URL}/oauth2/success?token=
+  cors_origin: ${BASE_URL}
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGEL_CLIENT_ID}
+            client-secret: ${GOOGEL_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+
+
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
+
+  jpa:
+    database-platform: ${JPA_DIALECT:org.hibernate.dialect.MySQLDialect}
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+    properties:
+      hibernate:
+        show_sql: ${SHOW_SQL:false}
+        format_sql: ${FORMAT_SQL:false}
+
+
+
