@@ -22,11 +22,10 @@ public class SecurityConfig {
   private final AppProperties appProperties;
 
   public SecurityConfig(
-      CustomOAuth2UserService service,
-      OAuth2SuccessHandler handler,
-      JwtAuthenticationFilter jwtFilter,
-      AppProperties appProperties) {
-
+          CustomOAuth2UserService service,
+          OAuth2SuccessHandler handler,
+          JwtAuthenticationFilter jwtFilter,
+          AppProperties appProperties) {
     this.oAuth2UserService = service;
     this.successHandler = handler;
     this.jwtFilter = jwtFilter;
@@ -35,42 +34,53 @@ public class SecurityConfig {
 
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
-
     CorsConfiguration config = new CorsConfiguration();
-
     config.setAllowedOrigins(List.of(appProperties.getCors_origin()));
-
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
     config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-
     config.setAllowCredentials(true);
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-
     source.registerCorsConfiguration("/**", config);
 
     return source;
   }
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
     http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        .csrf(AbstractHttpConfigurer::disable)
-        .authorizeHttpRequests(
-            auth ->
-                auth.requestMatchers("/", "/oauth2/**", "/login/**", "/h2-console/**")
-                    .permitAll()
-                    .anyRequest()
-                    .authenticated())
-        .oauth2Login(
-            oauth ->
-                oauth
+            .csrf(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(auth -> auth
+                    // Public paths
+                    .requestMatchers("/", "/oauth2/**", "/login/**", "/h2-console/**").permitAll()
+                    // API endpoints require authentication
+                    .requestMatchers("/api/**").authenticated()
+                    // Any other paths are public
+                    .anyRequest().permitAll()
+            )
+            .oauth2Login(oauth -> oauth
                     .userInfoEndpoint(u -> u.userService(oAuth2UserService))
-                    .successHandler(successHandler))
-        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                    .successHandler(successHandler)
+            )
+            .exceptionHandling(ex -> ex
+                    .authenticationEntryPoint((jakarta.servlet.http.HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response,
+                                               org.springframework.security.core.AuthenticationException authException) -> {
 
+                      String uri = request.getRequestURI();
+
+                      // API call: return 401
+                      if (uri.startsWith("/api/")) {
+                        response.sendError(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                      } else {
+                        // Web page: redirect to OAuth login
+                        response.sendRedirect("/oauth2/authorization/google");
+                      }
+                    })
+            )
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+    // Disable frame options for H2 console
     http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable));
 
     return http.build();
