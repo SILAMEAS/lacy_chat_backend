@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class UserController {
 
-    @GetMapping("/me")
+    @GetMapping("/profile")
     public String me(Authentication authentication) {
         return "Hello " + authentication.getName();
     }
