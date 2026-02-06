@@ -2,7 +2,7 @@ package com.lacy.chat.modules.user.service;
 
 import com.lacy.chat.modules.user.model.User;
 import com.lacy.chat.modules.user.repository.UserRepository;
-import com.lacy.chat.share.enums.EnumProvider;
+import com.lacy.chat.share.enums.Provider;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -35,7 +35,7 @@ public class CustomOAuth2UserService
                     u.setEmail(email);
                     u.setName(oauthUser.getAttribute("name"));
                     u.setPicture(oauthUser.getAttribute("picture"));
-                    u.setProvider(EnumProvider.GOOGLE.toString());
+                    u.setProvider(Provider.GOOGLE.toString());
                     u.setProviderId(oauthUser.getAttribute("sub"));
                     return userRepository.save(u);
                 });

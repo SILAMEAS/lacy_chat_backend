@@ -1,18 +1,20 @@
 package com.lacy.chat.modules.user.model;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+import com.lacy.chat.config.core.base.AbstractAuditable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "users")
 @Setter
 @Getter
-@AllArgsConstructor
-@NoArgsConstructor
-public class User {
+public class User extends AbstractAuditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
